@@ -12,7 +12,6 @@ import time
 from evdev import InputDevice, categorize, ecodes
 from hid_keys import hid_key_map as hid_keys
 import config
-import asyncio
 
 
 class Kiri:
@@ -36,7 +35,7 @@ class Kiri:
         self.device = None
         while self.device is None:
             try:
-                self.device = InputDevice('/dev/input/event2')
+                self.device = InputDevice('/dev/input/event0')
             except:
                 self.log.info("No keyboard - waiting...")
                 time.sleep(5)
@@ -65,8 +64,8 @@ class Kiri:
         except Exception as e:
             self.log.error('Failed to reset: %s', str(e))
 
-    async def run(self):
-        async for event in self.device.async_read_loop():
+    def run(self):
+        for event in self.device.read_loop():
             if event.type == ecodes.EV_KEY:
                 try:
                     data = categorize(event)
@@ -147,6 +146,4 @@ class Kiri:
 
 if __name__ == "__main__":
     kiri = Kiri()
-    asyncio.ensure_future(kiri.run())
-    loop = asyncio.get_event_loop()
-    loop.run_forever()
+    kiri.run()
